@@ -8,13 +8,14 @@ export class AuthService {
   private _idToken: string;
   private _accessToken: string;
   private _expiresAt: number;
+  userProfile: any;
 
   auth0 = new auth0.WebAuth({
     clientID: 'W03ajBBoTTcTO2T7rqPw0PE7kLwvVRA7',
     domain: 'dev-z4-jdq6p.auth0.com',
     responseType: 'token id_token',
     redirectUri: 'http://localhost:4200/callback',
-    scope: 'openid'
+    scope: 'openid profile'
   });
 
   constructor(public router: Router) {
@@ -64,6 +65,20 @@ export class AuthService {
     
     this.auth0.logout({
       returnTo: window.location.origin
+    });
+  }
+
+  public getProfile(cb): void {
+    if (!this._accessToken) {
+      throw new Error('Access Token must exist to fetch profile');
+    }
+  
+    const self = this;
+    this.auth0.client.userInfo(this._accessToken, (err, profile) => {
+      if (profile) {
+        self.userProfile = profile;
+      }
+      cb(err, profile);
     });
   }
 
